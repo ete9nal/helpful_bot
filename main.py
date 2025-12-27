@@ -1,4 +1,5 @@
 from datetime import datetime
+from id_generator import id_generator
 
 
 
@@ -10,6 +11,9 @@ from datetime import datetime
 2) Написати функцію, яка буде виводити нотатку
 3) Написати функцію, яка буде виводити усі нотатки
 4) Написати цикл, який буде отримувати інформацію від користувача та реагувати на неї
+_
+5) Пофіксити проблему, де в нас є глобальна змінна
+6) 
 '''
 
 
@@ -17,8 +21,10 @@ from datetime import datetime
 
 
 
-note_list = [] 
+note_list = [] # [{"creation_date": "19.12.2024 20:15", "text": "This is my note", id: 1}]
 note_file = "notes.txt"
+note_id_generator = id_generator()
+
 
 # Hello note; 04.07.2024 20:15
 
@@ -46,39 +52,57 @@ commands = '''
 5) help - to print this menu
 '''
 
+
+
 def add_new_note(note_text) -> bool:
     note_creation_date = datetime.today()
-    note_list.append({"text": note_text, "creation_date": note_creation_date})
+    next_id = note_id_generator()
+    note_list.append({"text": note_text, "creation_date": note_creation_date, "id": next_id})
     return True
 
 def print_note(index: int):
     note = note_list[index]
-    # 19.12.2024 20:15 dd.mm.yyyy hh:mm
     formatted_creation_date = note["creation_date"].strftime("%d.%m.%Y %H:%M")
-    print(f'"{note["text"]}"\n- Created on {formatted_creation_date}\n')
+    print(f'{note["id"]}: "{note["text"]}"\n- Created on {formatted_creation_date}\n')
 
 def print_all_notes():
     for note_index in range(len(note_list)):
         print_note(note_index)
 
+def find_top_note_id(notes: list[dict]) -> int:
+    max_id = 0
+    for note in notes:
+        note_id = note['id']
+        if note_id > max_id:
+            max_id = note_id
+    return max_id
+
+def find_top_note_id_functional(notes: list[dict]) -> int:
+    return max([note['id'] for note in notes] + [0])
+
 def save_notes():
     with open(note_file, 'w') as file:
         for note in note_list:
-            file.write(f'{note["text"]};{note["creation_date"]}\n')
+            file.write(f'{note["id"]};{note["text"]};{note["creation_date"]}\n')
 
 def read_notes() -> list[dict]:
     note_list = []
     with open(note_file) as file:
         for line in file:
-            text, date = line.strip().split(';')
+            id, text, date = line.strip().split(';')
             creation_date = datetime.strptime(date, "%Y-%m-%d %H:%M:%S.%f")
-            note_list.append({"text": text, "creation_date": creation_date})
+            note_list.append({"id": int(id), "text": text, "creation_date": creation_date})
     return note_list
 
 
 def init():
     global note_list
     note_list = read_notes()
+
+    max_note_id = find_top_note_id_functional(note_list)
+
+    global note_id_generator
+    note_id_generator = id_generator(max_note_id)
 
     print(welcome_banner)
     print("\nHello and welcome to our app!\n")
@@ -87,7 +111,7 @@ def init():
 
 def main():
     while True:
-        command, *args = input('Please enter command (enter exit to stop): ').strip().split(' ') # print_note 1  add_note
+        command, *args = input('Please enter command (enter exit to stop): ').strip().split(' ') 
         if command == 'exit':
             print("GoodBye!")
             save_notes()
@@ -106,21 +130,13 @@ def main():
                 print("Please enter a valid note number.")
                 continue
             print_note(index)
+        elif command == 'print_all':
+            print_all_notes()
 
 
-# text = input("Enter ur notation: ")
-# add_new_note(text)
-# add_new_note(text)
-# add_new_note(text)
-# add_new_note(text)
-# add_new_note(text)
 
 init()
 main()
 
 
-        
 
-
-
-# print_all_notes()
