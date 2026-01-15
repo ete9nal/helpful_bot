@@ -1,5 +1,6 @@
 from datetime import datetime
 from collections import UserList
+import json
 
 
 '''
@@ -11,23 +12,38 @@ User(first_name, last_name, phone_number)
 MessageSystem(messages):
     - додати метод, який буде діставати усі чати з нашої системи
     - додати метод, який буде виводити усі повідомлення між двомя користувачами
+
+При десеріалізації в нас буде проблема :
+    що кожен користувач буде окремою сутністю
+
+    Можна до кожного користувача додати унікальний ID
 '''
 
 
 
-class NoteUser:
-    def __init__(self, login):
-        self.login = login
-        self.notes_ids = [] # [1, 2, 5, 6, 7]
+MESSAGES_JSON_FILE = "messages.json"
 
 class User:
+    id = 0
+
     def __init__(self, first_name: str, last_name: str, phone_number: str):
+        User.id += 1
+        self.id = User.id
         self.first_name = first_name
         self.last_name = last_name
         self.phone_number = phone_number
 
+    def to_json(self) -> dict:
+        return {
+            "id": self.id,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "phone_number": self.phone_number
+        }
+
+        
     def __str__(self):
-        return f'{self.first_name} {self.last_name} | {self.phone_number}'
+        return f'{self.id} | {self.first_name} {self.last_name} | {self.phone_number}'
     
     def __repr__(self):
         return str(self)
@@ -46,11 +62,24 @@ class Message:
     def mark_message_as_read(self):
         self.receiving_time = datetime.now()
 
+    def to_json(self) -> dict:
+        return {
+            "content": self.content,
+            "sending_time": str(self.sending_time),
+            "receiving_time": str(self.receiving_time),
+            "author": self.author.to_json(),
+            "recepient": self.recepient.to_json()
+        }
+
+    def __lt__(self, other) -> bool:
+        return self.sending_time < other.sending_time
+
     def __str__(self):
         return f"Message from [{self.author}] to [{self.recepient}] \n '{self.content} {self.sending_time}'"
     
     def __repr__(self):
         return str(self)
+    
 
 class MessageSystem(UserList):
     def __init__(self, messages: list[Message] = []):
@@ -68,7 +97,41 @@ class MessageSystem(UserList):
             # Перевірити чи user_two є автором та user_one є отримувачем
             if author == user_two and recepient == user_one:
                 messages_set.add(message)
-        return list(messages_set)
+        return sorted(list(messages_set))
+    
+    def save_to_file(self):
+        with open(MESSAGES_JSON_FILE, 'w') as json_file:
+            json.dump(self.data, json_file, default=lambda o: o.to_json(), indent=2)
+
+    def read_from_json(self):
+        # id_set = set()
+        # user_set = set()
+        users_dict = {}
+        message_list = []
+        # Прочитати json файл
+        # Перебрати кожне повідомлення
+            # Дістати автора та отримувача з повідомлення
+            # Дістати їх id
+            # Зробити перевірку чи такий користувач вже був
+                # Якщо був, то дістаємо з переліку
+                # Якщо не був, то створюємо нового та додаємо до переліку
+        with open(MESSAGES_JSON_FILE) as json_file:
+            json_data = json.load(json_file)
+            for message_dict in json_data:
+                author = None
+                recepient = None
+                author_id, recepient_id = message_dict['author']['id'], message_dict['recepient']['id']
+                if author_id in users_dict:
+                    author = users_dict[author_id]
+                else:
+                    author_dict = message_dict['author']
+                    author = User(author_dict['first_name'], author_dict['last_name'], author_dict['phone_number'])
+                    author.id = author_dict['id']
+                    users_dict[author_id] = author
+                message_list.append(Message(message_dict['content'], author, None))
+        return message_list
+
+
 
     def get_all_chats(self, user: User) -> list[User]:
         user_set = set()
@@ -96,7 +159,9 @@ message_three = Message("How are you doing?", user_john, user_jane)
 message_four = Message("Todo: finish homework", user_john, user_john)
 message_five = Message("Hello, I am Jack", user_jack, user_john)
 
-messages = [message_one, message_two, message_three, message_four, message_five]
-message_system = MessageSystem(messages)
+# messages = [message_one, message_two, message_three, message_four, message_five]
+message_system = MessageSystem()
+print(message_system.read_from_json())
+# message_system.save_to_file()
 # print(message_system.get_all_chats(user_john))
-print(message_system.get_messages_between_users(user_john, user_jane))
+# print(message_system.get_messages_between_users(user_john, user_jane))
