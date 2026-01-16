@@ -6,7 +6,7 @@ import json
 '''
 Створити систему, яка буде працювати з повідомленнями
 
-Message(content: str, author: User, recepient: User, sending_time, receiving_time)
+Message(content: str, author: User, recipient: User, sending_time, receiving_time)
 User(first_name, last_name, phone_number)
 
 MessageSystem(messages):
@@ -49,10 +49,10 @@ class User:
         return str(self)
 
 class Message:
-    def __init__(self, content: str, author: User, recepient: User):
+    def __init__(self, content: str, author: User, recipient: User):
         self.content = content
         self.author = author
-        self.recepient = recepient
+        self.recipient = recipient
         self.sending_time = datetime.now()
         self.receiving_time = None
 
@@ -68,14 +68,14 @@ class Message:
             "sending_time": str(self.sending_time),
             "receiving_time": str(self.receiving_time),
             "author": self.author.to_json(),
-            "recepient": self.recepient.to_json()
+            "recipient": self.recipient.to_json()
         }
 
     def __lt__(self, other) -> bool:
         return self.sending_time < other.sending_time
 
     def __str__(self):
-        return f"Message from [{self.author}] to [{self.recepient}] \n '{self.content} {self.sending_time}'"
+        return f"Message from [{self.author}] to [{self.recipient}] \n '{self.content} {self.sending_time}'"
     
     def __repr__(self):
         return str(self)
@@ -90,12 +90,12 @@ class MessageSystem(UserList):
         # Перебрати усі повідомлення, які є в нашій системі
         for message in self:
             # В повідомленні потрібно дістати інформацію про відправника та отримувача
-            author, recepient = message.author, message.recepient
+            author, recipient = message.author, message.recipient
             # Перевірити чи user_one є автором та user_two є отримувачем
-            if author == user_one and recepient == user_two:
+            if author == user_one and recipient == user_two:
                 messages_set.add(message)
             # Перевірити чи user_two є автором та user_one є отримувачем
-            if author == user_two and recepient == user_one:
+            if author == user_two and recipient == user_one:
                 messages_set.add(message)
         return sorted(list(messages_set))
     
@@ -119,8 +119,8 @@ class MessageSystem(UserList):
             json_data = json.load(json_file)
             for message_dict in json_data:
                 author = None
-                recepient = None
-                author_id, recepient_id = message_dict['author']['id'], message_dict['recepient']['id']
+                recipient = None
+                author_id, recipient_id = message_dict['author']['id'], message_dict['recipient']['id']
                 if author_id in users_dict:
                     author = users_dict[author_id]
                 else:
@@ -138,12 +138,12 @@ class MessageSystem(UserList):
         # Перебрати усі повідомлення, які є в нашій системі
         for message in self:
             # В повідомленні потрібно дістати інформацію про відправника та отримувача
-            author, recepient = message.author, message.recepient
+            author, recipient = message.author, message.recipient
             # Перевірити коли користувач є автором
             if user == author:
-                user_set.add(recepient)
+                user_set.add(recipient)
             # Перевірити коли користувач є отримувачем
-            if user == recepient:
+            if user == recipient:
                 user_set.add(author)
             
             # Перевірити коли користувач є автором та отримувачем
