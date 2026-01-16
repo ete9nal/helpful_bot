@@ -2,7 +2,6 @@ from datetime import datetime
 from collections import UserList
 import json
 
-
 '''
 Створити систему, яка буде працювати з повідомленнями
 
@@ -19,9 +18,8 @@ MessageSystem(messages):
     Можна до кожного користувача додати унікальний ID
 '''
 
-
-
 MESSAGES_JSON_FILE = "messages.json"
+
 
 class User:
     id = 0
@@ -41,12 +39,12 @@ class User:
             "phone_number": self.phone_number
         }
 
-        
     def __str__(self):
         return f'{self.id} | {self.first_name} {self.last_name} | {self.phone_number}'
-    
+
     def __repr__(self):
         return str(self)
+
 
 class Message:
     def __init__(self, content: str, author: User, recipient: User):
@@ -76,10 +74,10 @@ class Message:
 
     def __str__(self):
         return f"Message from [{self.author}] to [{self.recipient}] \n '{self.content} {self.sending_time}'"
-    
+
     def __repr__(self):
         return str(self)
-    
+
 
 class MessageSystem(UserList):
     def __init__(self, messages: list[Message] = []):
@@ -98,7 +96,7 @@ class MessageSystem(UserList):
             if author == user_two and recipient == user_one:
                 messages_set.add(message)
         return sorted(list(messages_set))
-    
+
     def save_to_file(self):
         with open(MESSAGES_JSON_FILE, 'w') as json_file:
             json.dump(self.data, json_file, default=lambda o: o.to_json(), indent=2)
@@ -110,11 +108,11 @@ class MessageSystem(UserList):
         message_list = []
         # Прочитати json файл
         # Перебрати кожне повідомлення
-            # Дістати автора та отримувача з повідомлення
-            # Дістати їх id
-            # Зробити перевірку чи такий користувач вже був
-                # Якщо був, то дістаємо з переліку
-                # Якщо не був, то створюємо нового та додаємо до переліку
+        # Дістати автора та отримувача з повідомлення
+        # Дістати їх id
+        # Зробити перевірку чи такий користувач вже був
+        # Якщо був, то дістаємо з переліку
+        # Якщо не був, то створюємо нового та додаємо до переліку
         with open(MESSAGES_JSON_FILE) as json_file:
             json_data = json.load(json_file)
             for message_dict in json_data:
@@ -131,8 +129,6 @@ class MessageSystem(UserList):
                 message_list.append(Message(message_dict['content'], author, None))
         return message_list
 
-
-
     def get_all_chats(self, user: User) -> list[User]:
         user_set = set()
         # Перебрати усі повідомлення, які є в нашій системі
@@ -145,9 +141,10 @@ class MessageSystem(UserList):
             # Перевірити коли користувач є отримувачем
             if user == recipient:
                 user_set.add(author)
-            
+
             # Перевірити коли користувач є автором та отримувачем
         return list(user_set)
+
 
 user_john = User("John", "Doe", "1234567890")
 user_jane = User("Jane", "Doe", "0987654321")
