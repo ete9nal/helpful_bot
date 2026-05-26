@@ -26,8 +26,8 @@ The project strictly follows core Object-Oriented Programming (OOP) concepts:
 
 1. Clone the repository:
    ```bash
-   git clone [https://github.com/ete9nal/Nexus-Contacts-Notes-Manager.git](https://github.com/ete9nal/Nexus-Contacts-Notes-Manager.git)
+      git clone [https://github.com/ete9nal/Nexus-Contacts-Notes-Manager.git](https://github.com/ete9nal/Nexus-Contacts-Notes-Manager.git)
 
 2. Navigate to the project folder and run:
   ```bash
-   python main.py
+     python main.py
